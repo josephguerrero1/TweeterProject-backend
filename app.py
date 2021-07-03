@@ -7,8 +7,9 @@ import secrets
 
 app = Flask(__name__)
 
-# To do for all app.get decorations
-# Add try and except block
+# To do for all app.get decorations:
+
+# Add try and except block statements for each decoration
 # Write if check to see if the userId is there because userId is optional
 
 
@@ -240,7 +241,31 @@ def like_comment():
     commentId = request.json['commentId']
 
 
-# @app.delete("/api/users")
+@app.delete("/api/users")
+def delete_user():
+    loginToken = request.json['loginToken']
+    password = request.json['password']
+
+    Login_combo = dbhelpers.run_select_statement(
+        "SELECT u.password, us.loginToken FROM `user` u INNER JOIN user_session us ON u.id=us.user_id WHERE us.loginToken= ?", [
+            loginToken]
+    )
+
+    if(password == Login_combo[0][0]):
+        rowcount = dbhelpers.run_delete_statement(
+            "DELETE FROM users WHERE loginToken = ?", [loginToken]
+        )
+    else:
+        return "Wrong password!"
+
+    if(rowcount == 1):
+        return "User has been deleted!"
+    elif(rowcount == 0):
+        return "Error, loginToken does not exist!"
+    elif(rowcount == None):
+        return "Database Error"
+
+
 @app.delete("/api/login")
 def logout():
     loginToken = request.json['loginToken']
@@ -249,22 +274,98 @@ def logout():
         "DELETE FROM user_session WHERE loginToken = ?", [loginToken]
     )
 
-    # if(rowcount == 1):
-    #     # success
-    # elif(rowcount == 0):
-    #     # loginToken did not exist
-    # elif(rowcount == None):
-    #     # database error
+    if(rowcount == 1):
+        return "User has been logged out!"
+    elif(rowcount == 0):
+        return "Error, loginToken does not exist!"
+    elif(rowcount == None):
+        return "Database Error"
 
 
-# @app.delete("/api/follows")
-# @app.delete("/api/tweets")
-# @app.delete("/api/tweet-likes")
-# @app.delete("/api/comments")
-# @app.delete("/api/comment-likes")
-# @app.patch("/api/users")
-# @app.patch("/api/tweets")
-# @app.patch("/api/comments")
+@app.delete("/api/follows")
+def unfollow_user():
+    loginToken = request.json['loginToken']
+    followId = request.json['followId']
+
+    rowcount = dbhelpers.run_delete_statement(
+        "DELETE FROM follow WHERE "
+    )
+
+
+@app.delete("/api/tweets")
+def delete_tweet():
+    loginToken = request.json['loginToken']
+    tweetId = request.json['tweetId']
+
+
+@app.delete("/api/tweet-likes")
+def unlike_tweet():
+    loginToken = request.json['loginToken']
+    tweetId = request.json['tweetId']
+
+
+@app.delete("/api/comments")
+def delete_comments():
+    loginToken = request.json['loginToken']
+    commentId = request.json['commentId']
+
+
+@app.delete("/api/comment-likes")
+def unlike_comment():
+    loginToken = request.json['loginToken']
+    commentId = request.json['commentId']
+
+
+@app.patch("/api/users")
+def update_user():
+    loginToken = request.json['loginToken']
+    bio = request.json['bio']
+    birthdate = request.json['birthdate']
+    email = request.json['email']
+    username = request.json['username']
+    bannerUrl = request.json['bannerUrl']
+    imageUrl = request.json['imageUrl']
+
+    if(email != None):
+        # run update
+        # Run individually
+        return True
+
+
+@app.patch("/api/tweets")
+def update_tweet():
+    loginToken = request.json['loginToken']
+    tweetId = request.json['tweetId']
+    content = request.json['content']
+
+    # Write if statement
+    tweet = dbhelpers.run_select_statement(
+        "SELECT us.loginToken, t.id, t.content FROM user_session us INNER JOIN tweet t ON us.user_id=t.user_id WHERE us.loginToken = ? AND t.id = ?", [
+            loginToken, tweetId]
+    )
+
+    rowcount = dbhelpers.run_update_statement(
+        "UPDATE tweet SET content = ? WHERE id = ?", [content, tweetId]
+    )
+
+
+@app.patch("/api/comments")
+def update_comment():
+    loginToken = request.json['loginToken']
+    commentId = request.json['commentId']
+    content = request.json['content']
+
+    # Write if statement
+    comment = dbhelpers.run_select_statement(
+        "SELECT us.loginToken, c.id, c.content FROM user_session us INNER JOIN comment c ON us.user_id = c.user_id WHERE us.loginToken = ? AND c.id = ?", [
+            loginToken, commentId]
+    )
+
+    rowcount = dbhelpers.run_update_statement(
+        "UPDATE comment SET content = ? WHERE id = ?", [content, commentId]
+    )
+
+
 if(len(sys.argv) > 1):
     mode = sys.argv[1]
 else:
