@@ -7,23 +7,31 @@ import secrets
 
 app = Flask(__name__)
 
-# To do for all app.get decorations:
-
 # Add try and except block statements for each decoration
-# Write if check to see if the userId is there because userId is optional
 
 
 @app.get("/api/users")
 def get_users():
-    params = int(request.args['userId'])
-    users = dbhelpers.run_select_statement(
-        "SELECT id, email, username, bio, birthdate, imageUrl, bannerUrl FROM user WHERE id = ?", [params])
+    userId = int(request.args['userId'])
 
-    if(users == None):
-        return Response("Failed to GET users", mimetype="text/plain", status=500)
+    if userId:
+        user = dbhelpers.run_select_statement(
+            "SELECT id, email, username, bio, birthdate, imageUrl, bannerUrl FROM user WHERE id = ?", [userId])
+
+        if(user == None):
+            return Response("Failed to GET user", mimetype="text/plain", status=500)
+        else:
+            user_json = json.dumps(user, default=str)
+            return Response(user_json, mimetype="application/json", status=200)
     else:
-        users_json = json.dumps(users, default=str)
-        return Response(users_json, mimetype="application/json", status=200)
+        users = dbhelpers.run_insert_statement(
+            "SELECT id, email, username, bio, birthdate, imageUrl, bannerUrl FROM user")
+
+        if(users == None):
+            return Response("Failed to GET all users", mimetype="text/plain", status=500)
+        else:
+            users_json = json.dumps(users, default=str)
+            return Response(users_json, mimetype="application/json", status=200)
 
 
 @app.get("/api/tweets")
