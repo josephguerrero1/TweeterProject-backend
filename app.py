@@ -13,6 +13,9 @@ app = Flask(__name__)
 # Remove int(), add .get() for optional
 
 
+# get_users
+
+
 @app.get("/api/users")
 def get_users():
     userId = request.args.get('userId')
@@ -62,6 +65,9 @@ def get_users():
             return Response(all_users_json, mimetype="application/json", status=200)
 
 
+# get_tweets
+
+
 @app.get("/api/tweets")
 def get_tweets():
     userId = request.args.get('userId')
@@ -69,6 +75,14 @@ def get_tweets():
     if userId:
         tweet = dbhelpers.run_select_statement(
             "SELECT t.id, t.user_id, u.username, t.content, t.createdAt, u.imageUrl, t.tweetimage_url FROM `user` u INNER JOIN tweet t ON u.id = t.user_id WHERE t.user_id = ?", [userId])
+
+        tweetId = tweet[0]
+        email = tweet[0][1]
+        username = tweet[0][2]
+        bio = tweet[0][3]
+        birthdate = tweet[0][4]
+        imageUrl = tweet[0][5]
+        bannerUrl = tweet[0][6]
 
         if(tweet == None):
             return Response("Failed to GET tweet", mimetype="text/plain", status=500)
@@ -84,6 +98,9 @@ def get_tweets():
         else:
             all_tweets_json = json.dumps(all_tweets, default=str)
             return Response(all_tweets_json, mimetype="application/json", status=200)
+
+
+# get_tweet_likes
 
 
 @app.get("/api/tweet-likes")
@@ -110,6 +127,9 @@ def get_tweet_likes():
             return Response(all_tweet_likes_json, mimetype="application/json", status=200)
 
 
+# get_comments
+
+
 @app.get("/api/comments")
 def get_comments():
     tweetId = int(request.args['tweetId'])
@@ -121,6 +141,9 @@ def get_comments():
     else:
         comments_json = json.dumps(comments, default=str)
         return Response(comments_json, mimetype="application/json", status=200)
+
+
+# get_comment_likes
 
 
 @app.get("/api/comment-likes")
@@ -147,6 +170,9 @@ def get_comment_likes():
             return Response(all_comment_likes_json, mimetype="application/json", status=200)
 
 
+# get_user_follows
+
+
 @app.get("/api/follows")
 def get_user_follows():
     userId = int(request.args['userId'])
@@ -161,6 +187,9 @@ def get_user_follows():
         return Response(user_follows_json, mimetype="application/json", status=200)
 
 
+# get_user_followers
+
+
 @app.get("/api/followers")
 def get_user_followers():
     userId = int(request.args['userId'])
@@ -173,6 +202,9 @@ def get_user_followers():
     else:
         user_followers_json = json.dumps(user_followers, default=str)
         return Response(user_followers_json, mimetype="application/json", status=200)
+
+
+# post_user
 
 
 @app.post("/api/users")
@@ -196,6 +228,9 @@ def post_user():
                    "birthdate": birthdate, "imageUrl": imageUrl, "bannerUrl": bannerUrl, "loginToken": loginToken}
         newUser_json = json.dumps(newUser, default=str)
         return Response(newUser_json, mimetype="application/json", status=201)
+
+
+# user_login
 
 
 @app.post("/api/login")
@@ -231,6 +266,9 @@ def user_login():
         return Response(logged_in_user_json, mimetype="application/json", status=201)
 
 
+# follow_user
+
+
 @app.post("/api/follows")
 def follow_user():
     loginToken = request.json['loginToken']
@@ -256,6 +294,9 @@ def follow_user():
     else:
 
         return Response(status=204)
+
+
+# post_tweet
 
 
 @app.post("/api/tweets")
@@ -297,6 +338,9 @@ def post_tweet():
         return Response(tweet_json, mimetype="application/json", status=201)
 
 
+# like_tweet
+
+
 @app.post("/api/tweet-likes")
 def like_tweet():
     loginToken = request.json['login_Token']
@@ -312,12 +356,19 @@ def like_tweet():
     else:
         userId = user_id[0][0]
 
-    if(userId == None):
-        return Response("DB Error, Sorry!", mimetype="text/plain", status=500)
+    tweet_like_id = dbhelpers.run_insert_statement(
+        "INSERT INTO tweet_like (tweet_id, user_id) VALUES (?, ?)", [
+            tweetId, userId]
+    )
+
+    if(tweet_like_id == None):
+        return Response("Tweet ID is invalid", mimetype="text/plain", status=500)
     else:
-        tweet_like = "Tweet has been liked!"
-        tweet_like_json = json.dumps(tweet_like, default=str)
-        return Response(tweet_like_json, mimetype="application/json", status=201)
+        return Response(status=204)
+# Note: Catch error for when if the user has already liked the tweet
+
+
+# post_comment
 
 
 @app.post("/api/comments")
@@ -326,17 +377,45 @@ def post_comment():
     tweetId = request.json['tweetId']
     content = request.json['content']
 
-    userId = dbhelpers.run_insert_statement(
-        "INSERT INTO comment (tweet_id, content) VALUES (?, ?)", [
-            tweetId, content]
+    user_id = dbhelpers.run_select_statement(
+        "SELECT us.user_id FROM user_session us WHERE us.loginToken = ?", [
+            loginToken]
     )
 
-    if(userId == None):
-        return Response("DB Error, Sorry!", mimetype="text/plain", status=500)
+    if(user_id == None):
+        return Response("Invalid Login Token", mimetype="text/plain", status=500)
     else:
-        comment = "Comment has been posted!"
+        userId = user_id[0][0]
+
+    comment_id = dbhelpers.run_insert_statement(
+        "INSERT INTO comment (tweet_id, user_id, content) VALUES (?, ?, ?)", [
+            tweetId, userId, content]
+    )
+
+    if(comment_id == None):
+        return Response("Tweet ID is invalid", mimetype="text/plain", status=500)
+    else:
+        comment_info = dbhelpers.run_select_statement(
+            "SELECT c.id, c.tweet_id, c.user_id, u.username, c.content, c.createdAt FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.id = ?", [
+                comment_id]
+        )
+
+        username = comment_info[0][3]
+        createdAt = comment_info[0][5]
+
+        comment = {
+            "commentId": comment_id,
+            "tweetId": tweetId,
+            "userId": userId,
+            "username": username,
+            "content": content,
+            "createdAt": createdAt
+        }
+
         comment_json = json.dumps(comment, default=str)
         return Response(comment_json, mimetype="application/json", status=201)
+
+# like_comment
 
 
 @app.post("/api/comment-likes")
@@ -344,34 +423,78 @@ def like_comment():
     loginToken = request.json['loginToken']
     commentId = request.json['commentId']
 
+    user_id = dbhelpers.run_select_statement(
+        "SELECT us.user_id FROM user_session us WHERE us.loginToken = ?", [
+            loginToken]
+    )
+
+    if(user_id == None):
+        return Response("Invalid Login Token", mimetype="text/plain", status=500)
+    else:
+        userId = user_id[0][0]
+
+    comment_like_id = dbhelpers.run_insert_statement(
+        "INSERT INTO comment_like (comment_id, user_id) VALUES (?, ?)", [
+            commentId, userId]
+    )
+
+    if(comment_like_id == None):
+        return Response("Comment ID is invalid", mimetype="text/plain", status=500)
+    else:
+        comment_like_info = dbhelpers.run_select_statement(
+            "SELECT cl.comment_id, cl.user_id, u.username FROM `user` u INNER JOIN comment_like cl ON u.id = cl.user_id WHERE cl.id = ?", [
+                comment_like_id]
+        )
+
+        username = comment_like_info[0][2]
+
+        comment_like = {
+            "commentId": commentId,
+            "userId": userId,
+            "username": username
+        }
+
+        comment_like_json = json.dumps(comment_like, default=str)
+        return Response(comment_like_json, mimetype="application/json", status=201)
+
+# delete_user
+
 
 @app.delete("/api/users")
 def delete_user():
     loginToken = request.json['loginToken']
     password = request.json['password']
 
-    Login_combo = dbhelpers.run_select_statement(
-        "SELECT u.password, us.loginToken FROM `user` u INNER JOIN user_session us ON u.id=us.user_id WHERE us.loginToken= ?", [
+    user_id = dbhelpers.run_select_statement(
+        "SELECT us.user_id FROM user_session us WHERE us.loginToken = ?", [
             loginToken]
     )
 
-    if(password == Login_combo[0][0]):
-        rowcount = dbhelpers.run_delete_statement(
-            "DELETE FROM users WHERE loginToken = ?", [loginToken]
-        )
+    if(user_id == None):
+        return Response("Invalid Login Token", mimetype="text/plain", status=500)
     else:
-        return "Wrong password!"
+        userId = user_id[0][0]
 
-    if(rowcount == 1):
-        return "User has been deleted!"
-    elif(rowcount == 0):
-        return "Error, loginToken does not exist!"
-    elif(rowcount == None):
-        return "Database Error"
+    # if(password == Login_combo[0][0]):
+    #     rowcount = dbhelpers.run_delete_statement(
+    #         "DELETE FROM users WHERE loginToken = ?", [loginToken]
+    #     )
+    # else:
+    #     return "Wrong password!"
+
+    # if(rowcount == 1):
+    #     return "User has been deleted!"
+    # elif(rowcount == 0):
+    #     return "Error, loginToken does not exist!"
+    # elif(rowcount == None):
+    #     return "Database Error"
+
+
+# user_logout
 
 
 @app.delete("/api/login")
-def logout():
+def user_logout():
     loginToken = request.json['loginToken']
 
     rowcount = dbhelpers.run_delete_statement(
@@ -386,6 +509,9 @@ def logout():
         return "Database Error"
 
 
+# unfollow_user
+
+
 @app.delete("/api/follows")
 def unfollow_user():
     loginToken = request.json['loginToken']
@@ -396,10 +522,16 @@ def unfollow_user():
     )
 
 
+# delete_tweet
+
+
 @app.delete("/api/tweets")
 def delete_tweet():
     loginToken = request.json['loginToken']
     tweetId = request.json['tweetId']
+
+
+# unlike_tweet
 
 
 @app.delete("/api/tweet-likes")
@@ -408,16 +540,25 @@ def unlike_tweet():
     tweetId = request.json['tweetId']
 
 
+# delete_comments
+
+
 @app.delete("/api/comments")
 def delete_comments():
     loginToken = request.json['loginToken']
     commentId = request.json['commentId']
 
 
+# unlike_comment
+
+
 @app.delete("/api/comment-likes")
 def unlike_comment():
     loginToken = request.json['loginToken']
     commentId = request.json['commentId']
+
+
+# update_user
 
 
 @app.patch("/api/users")
@@ -434,6 +575,9 @@ def update_user():
         # run update
         # Run individually
         return True
+
+
+# update_tweet
 
 
 @app.patch("/api/tweets")
@@ -453,6 +597,9 @@ def update_tweet():
     )
 
 
+# update_comment
+
+
 @app.patch("/api/comments")
 def update_comment():
     loginToken = request.json['loginToken']
@@ -468,6 +615,9 @@ def update_comment():
     rowcount = dbhelpers.run_update_statement(
         "UPDATE comment SET content = ? WHERE id = ?", [content, commentId]
     )
+
+
+# Production code
 
 
 if(len(sys.argv) > 1):
