@@ -8,63 +8,113 @@ import secrets
 app = Flask(__name__)
 
 # Add try and except block statements for each decoration
+# Do better error catching (In what ways can the code error)
+# Add dictionaries to app decorators
+# Remove int(), add .get() for optional
 
 
 @app.get("/api/users")
 def get_users():
-    userId = int(request.args['userId'])
+    userId = request.args.get('userId')
 
     if userId:
-        user = dbhelpers.run_select_statement(
+        user_info = dbhelpers.run_select_statement(
             "SELECT id, email, username, bio, birthdate, imageUrl, bannerUrl FROM user WHERE id = ?", [userId])
 
+        email = user_info[0][1]
+        username = user_info[0][2]
+        bio = user_info[0][3]
+        birthdate = user_info[0][4]
+        imageUrl = user_info[0][5]
+        bannerUrl = user_info[0][6]
+
+        user = [{"userId": userId, "email": email, "username": username, "bio": bio, "birthdate": birthdate, "imageUrl": imageUrl, "bannerUrl": bannerUrl
+                 }]
         if(user == None):
             return Response("Failed to GET user", mimetype="text/plain", status=500)
         else:
             user_json = json.dumps(user, default=str)
             return Response(user_json, mimetype="application/json", status=200)
     else:
-        users = dbhelpers.run_insert_statement(
+        all_users = dbhelpers.run_select_statement(
             "SELECT id, email, username, bio, birthdate, imageUrl, bannerUrl FROM user")
 
-        if(users == None):
+        empty_user = []
+
+        for user in all_users:
+            userId = user[0]
+            email = user[1]
+            username = user[2]
+            bio = user[3]
+            birthdate = user[4]
+            imageUrl = user[5]
+            bannerUrl = user[6]
+
+            user_dictionary = {"userId": userId, "email": email, "username": username, "bio": bio, "birthdate": birthdate, "imageUrl": imageUrl, "bannerUrl": bannerUrl
+                               }
+
+            empty_user.append(user_dictionary)
+
+        if(all_users == None):
             return Response("Failed to GET all users", mimetype="text/plain", status=500)
         else:
-            users_json = json.dumps(users, default=str)
-            return Response(users_json, mimetype="application/json", status=200)
+            all_users_json = json.dumps(empty_user, default=str)
+            return Response(all_users_json, mimetype="application/json", status=200)
 
 
 @app.get("/api/tweets")
 def get_tweets():
-    params = int(request.args['userId'])
-    tweets = dbhelpers.run_select_statement(
-        "SELECT t.id, t.user_id, u.username, t.content, t.createdAt,u.imageUrl, t.tweetimage_url FROM `user` u INNER JOIN tweet t ON u.id=t.user_id WHERE u.id = ?", [params])
+    userId = request.args.get('userId')
 
-    if(tweets == None):
-        return Response("Failed to GET tweets", mimetype="text/plain", status=500)
+    if userId:
+        tweet = dbhelpers.run_select_statement(
+            "SELECT t.id, t.user_id, u.username, t.content, t.createdAt, u.imageUrl, t.tweetimage_url FROM `user` u INNER JOIN tweet t ON u.id = t.user_id WHERE t.user_id = ?", [userId])
+
+        if(tweet == None):
+            return Response("Failed to GET tweet", mimetype="text/plain", status=500)
+        else:
+            tweet_json = json.dumps(tweet, default=str)
+            return Response(tweet_json, mimetype="application/json", status=200)
     else:
-        tweets_json = json.dumps(tweets, default=str)
-        return Response(tweets_json, mimetype="application/json", status=200)
+        all_tweets = dbhelpers.run_select_statement(
+            "SELECT t.id, t.user_id, u.username, t.content, t.createdAt, u.imageUrl, t.tweetimage_url FROM `user` u INNER JOIN tweet t ON u.id = t.user_id")
+
+        if(all_tweets == None):
+            return Response("Failed to GET all tweets", mimetype="text/plain", status=500)
+        else:
+            all_tweets_json = json.dumps(all_tweets, default=str)
+            return Response(all_tweets_json, mimetype="application/json", status=200)
 
 
 @app.get("/api/tweet-likes")
 def get_tweet_likes():
-    params = int(request.args['tweetId'])
-    tweet_likes = dbhelpers.run_select_statement(
-        "SELECT tl.tweet_id, tl.user_id, u.username FROM `user` u INNER JOIN tweet_like tl ON u.id = tl.user_id WHERE tl.tweet_id = ?", [params])
+    tweetId = int(request.args['tweetId'])
 
-    if(tweet_likes == None):
-        return Response("Failed to GET tweet likes", mimetype="text/plain", status=500)
+    if tweetId:
+        tweet_likes = dbhelpers.run_select_statement(
+            "SELECT tl.tweet_id, tl.user_id, u.username FROM `user` u INNER JOIN tweet_like tl ON u.id = tl.user_id WHERE tweet_id = ?", [tweetId])
+
+        if(tweet_likes == None):
+            return Response("Failed to GET tweet likes", mimetype="text/plain", status=500)
+        else:
+            tweet_likes_json = json.dumps(tweet_likes, default=str)
+            return Response(tweet_likes_json, mimetype="application/json", status=200)
     else:
-        tweet_likes_json = json.dumps(tweet_likes, default=str)
-        return Response(tweet_likes_json, mimetype="application/json", status=200)
+        all_tweet_likes = dbhelpers.run_select_statement(
+            "SELECT tl.tweet_id, tl.user_id, u.username FROM `user` u INNER JOIN tweet_like tl ON u.id = tl.user_id")
+
+        if(all_tweet_likes == None):
+            return Response("Failed to GET all tweet likes", mimetype="text/plain", status=500)
+        else:
+            all_tweet_likes_json = json.dumps(all_tweet_likes, default=str)
+            return Response(all_tweet_likes_json, mimetype="application/json", status=200)
 
 
 @app.get("/api/comments")
 def get_comments():
-    params = int(request.args['tweetId'])
+    tweetId = int(request.args['tweetId'])
     comments = dbhelpers.run_select_statement(
-        "SELECT c.id, c.tweet_id, c.user_id, u.username, c.content, c.createdAt FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.tweet_id = ?", [params])
+        "SELECT c.id, c.tweet_id, c.user_id, u.username, c.content, c.createdAt FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.tweet_id = ?", [tweetId])
 
     if(comments == None):
         return Response("Failed to GET comments", mimetype="text/plain", status=500)
@@ -75,21 +125,34 @@ def get_comments():
 
 @app.get("/api/comment-likes")
 def get_comment_likes():
-    params = int(request.args['commentId'])
-    comment_likes = dbhelpers.run_select_statement(
-        "SELECT cl.comment_id, cl.user_id, u.username FROM `user` u INNER JOIN comment_like cl ON u.id=cl.user_id WHERE cl.comment_id = ?", [params])
+    commentId = int(request.args['commentId'])
 
-    if(comment_likes == None):
-        return Response("Failed to GET comment likes", mimetype="text/plain", status=500)
+    if commentId:
+        comment_likes = dbhelpers.run_select_statement(
+            "SELECT c.id, c.user_id, u.username FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.id = ?", [commentId])
+
+        if(comment_likes == None):
+            return Response("Failed to GET comment likes", mimetype="text/plain", status=500)
+        else:
+            comment_likes_json = json.dumps(comment_likes, default=str)
+            return Response(comment_likes_json, mimetype="application/json", status=200)
     else:
-        comment_likes_json = json.dumps(comment_likes, default=str)
-        return Response(comment_likes_json, mimetype="application/json", status=200)
+        all_comment_likes = dbhelpers.run_select_statement(
+            "SELECT c.id, c.user_id, u.username FROM `user` u INNER JOIN comment c ON u.id = c.user_id")
+
+        if(all_comment_likes == None):
+            return Response("Failed to GET all comment likes", mimetype="text/plain", status=500)
+        else:
+            all_comment_likes_json = json.dumps(all_comment_likes, default=str)
+            return Response(all_comment_likes_json, mimetype="application/json", status=200)
 
 
 @app.get("/api/follows")
 def get_user_follows():
-    params = int(request.args['userId'])
-    user_follows = dbhelpers.run_select_statement("", [params])
+    userId = int(request.args['userId'])
+
+    user_follows = dbhelpers.run_select_statement(
+        "SELECT f.followed_id, u.email, u.username, u.bio, u.birthdate, u.imageUrl, u.bannerUrl FROM `user` u INNER JOIN follow f ON u.id = f.followed_id WHERE f.user_id= ?", [userId])
 
     if(user_follows == None):
         return Response("Failed to GET user follows", mimetype="text/plain", status=500)
@@ -100,8 +163,10 @@ def get_user_follows():
 
 @app.get("/api/followers")
 def get_user_followers():
-    params = int(request.args['userId'])
-    user_followers = dbhelpers.run_select_statement("", [params])
+    userId = int(request.args['userId'])
+
+    user_followers = dbhelpers.run_select_statement(
+        "SELECT f.user_id, u.email, u.username, u.bio, u.birthdate, u.imageUrl, u.bannerUrl FROM `user` u INNER JOIN follow f ON u.id = f.user_id WHERE f.followed_id= ?", [userId])
 
     if(user_followers == None):
         return Response("Failed to GET user followers", mimetype="text/plain", status=500)
@@ -126,10 +191,11 @@ def post_user():
     if(userId == None):
         return Response("DB Error, Sorry!", mimetype="text/plain", status=500)
     else:
-        user = [userId, email, username, bio,
-                birthdate, imageUrl, bannerUrl, loginToken]
-        user_json = json.dumps(user, default=str)
-        return Response(user_json, mimetype="application/json", status=201)
+
+        newUser = {"userId": userId, "email": email, "username": username, "bio": bio,
+                   "birthdate": birthdate, "imageUrl": imageUrl, "bannerUrl": bannerUrl, "loginToken": loginToken}
+        newUser_json = json.dumps(newUser, default=str)
+        return Response(newUser_json, mimetype="application/json", status=201)
 
 
 @app.post("/api/login")
@@ -169,52 +235,82 @@ def user_login():
 def follow_user():
     loginToken = request.json['loginToken']
     followId = request.json['followId']
-    # userId =
 
-    userId = dbhelpers.run_insert_statement(
-        "INSERT INTO follow (user_id, followed_id) VALUES (?, ?)"), [userId, followId]
+    user_id = dbhelpers.run_select_statement(
+        "SELECT us.user_id FROM user_session us WHERE us.loginToken = ?", [
+            loginToken]
+    )
 
-    if(userId == None):
-        return Response("DB Error, Sorry!", mimetype="text/plain", status=500)
+    if(user_id == None):
+        return Response("Invalid Login Token", mimetype="text/plain", status=500)
     else:
-        user = "User has been followed!"
-        user_json = json.dumps(user, default=str)
-        return Response(user_json, mimetype="application/json", status=204)
+        userId = user_id[0][0]
+
+    follow_id = dbhelpers.run_insert_statement(
+        "INSERT INTO follow (user_id, followed_id) VALUES (?, ?)", [
+            userId, followId]
+    )
+
+    if(follow_id == None):
+        return Response("Follow ID is invalid", mimetype="text/plain", status=500)
+    else:
+
+        return Response(status=204)
 
 
 @app.post("/api/tweets")
 def post_tweet():
     loginToken = request.json['loginToken']
     content = request.json['content']
-    imageUrl = request.json['imageUrl']
+    imageUrl = request.json.get('imageUrl')
 
-    userId = dbhelpers.run_insert_statement(
+    user_id = dbhelpers.run_select_statement(
+        "SELECT us.user_id FROM user_session us WHERE us.loginToken = ?", [
+            loginToken]
+    )
+
+    if(user_id == None):
+        return Response("Invalid Login Token", mimetype="text/plain", status=500)
+    else:
+        userId = user_id[0][0]
+
+    tweetId = dbhelpers.run_insert_statement(
         "INSERT INTO tweet (content, imageUrl) VALUES (?, ?)"), [content, imageUrl]
 
-    if(userId == None):
+    if(tweetId == None):
         return Response("DB Error, Sorry!", mimetype="text/plain", status=500)
     else:
 
-        params = request.args['loginToken']
-
         tweet_info = dbhelpers.run_select_statement(
-            "SELECT t.id, t.user_id, u.username, u.imageUrl, t.content, t.createdAt, t.tweetimage_url FROM user_session us INNER JOIN `user` u ON us.user_id=u.id INNER JOIN tweet t ON u.id=t.user_id WHERE us.loginToken = ?", [
-                params]
+            "SELECT u.username, u.imageUrl, t.createdAt FROM `user` u INNER JOIN tweet t ON u.id = t.user_id WHERE tweet_id = ?", [
+                tweetId]
         )
-        tweet_info_json = json.dumps(tweet_info, default=str)
-        return Response(tweet_info_json, mimetype="application/json", status=201)
+
+        username = tweet_info[0][0]
+        userImageUrl = tweet_info[0][1]
+        createdAt = tweet_info[0][2]
+
+        tweet = {"tweetId": tweetId, "userId": userId, "username": username, "userImageUrl": userImageUrl, "content": content, "createdAt": createdAt, "imageUrl": imageUrl
+                 }
+
+        tweet_json = json.dumps(tweet, default=str)
+        return Response(tweet_json, mimetype="application/json", status=201)
 
 
 @app.post("/api/tweet-likes")
 def like_tweet():
     loginToken = request.json['login_Token']
     tweetId = request.json['tweetId']
-    # userId =
 
-    userId = dbhelpers.run_insert_statement(
-        "INSERT INTO tweet_like (user_id, tweet_id) VALUES (?, ?)", [
-            userId, tweetId]
+    user_id = dbhelpers.run_select_statement(
+        "SELECT us.user_id FROM user_session us WHERE us.loginToken = ?", [
+            loginToken]
     )
+
+    if(user_id == None):
+        return Response("Invalid Login Token", mimetype="text/plain", status=500)
+    else:
+        userId = user_id[0][0]
 
     if(userId == None):
         return Response("DB Error, Sorry!", mimetype="text/plain", status=500)
