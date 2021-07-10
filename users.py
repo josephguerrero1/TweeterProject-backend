@@ -193,7 +193,7 @@ class Users:
         )
 
         if(user_id == None):
-            return Response("Invalid Login Token", mimetype="text/plain", status=500)
+            return Response("Invalid Login Token", mimetype="text/plain", status=400)
         else:
             userId = user_id[0][0]
 
@@ -211,4 +211,4 @@ class Users:
         if(rowcount == 1):
             return Response(status=204)
         elif(rowcount == None):
-            return Response("Database Error", mimetype="text/plain", status=500)
+            return Response("Failed to delete user", mimetype="text/plain", status=500)
