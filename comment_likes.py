@@ -24,7 +24,7 @@ class Comment_likes:
                 "username": username
             }]
             if(comment_like == None):
-                return Response("Failed to GET comment like", mimetype="text/plain", status=500)
+                return Response("Failed to GET comment like information", mimetype="text/plain", status=500)
             else:
                 comment_like_json = json.dumps(comment_like, default=str)
                 return Response(comment_like_json, mimetype="application/json", status=200)
@@ -48,7 +48,7 @@ class Comment_likes:
                 empty_comment_like.append(comment_like)
 
             if(all_comment_likes == None):
-                return Response("Failed to GET all comment likes", mimetype="text/plain", status=500)
+                return Response("Failed to GET all comment likes information", mimetype="text/plain", status=500)
             else:
                 all_comment_likes_json = json.dumps(
                     all_comment_likes, default=str)
@@ -116,6 +116,6 @@ class Comment_likes:
         )
 
         if(rowcount == None):
-            return Response("Database Error", mimetype="text/plain", status=500)
+            return Response("Failed to unlike comment", mimetype="text/plain", status=500)
         elif(rowcount == 1):
             return Response(status=204)
