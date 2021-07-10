@@ -12,7 +12,7 @@ class Followers:
         userId = request.args['userId']
 
         all_user_followers = dbhelpers.run_select_statement(
-            "SELECT u.id, u.email, u.username, u.bio, u.birthdate, u.imageUrl, u.bannerUrl FROM `user` u INNER JOIN follow f ON u.id = f.followed_id WHERE f.followed_id = ?", [
+            "SELECT u.id, u.email, u.username, u.bio, u.birthdate, u.imageUrl, u.bannerUrl FROM `user` u INNER JOIN follow f ON u.id = f.user_id WHERE f.followed_id = ?", [
                 userId]
         )
 

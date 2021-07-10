@@ -9,9 +9,9 @@ class Follows:
     # Get User Follows
 
     def get_user_follows():
-        userId = int(request.args['userId'])
+        userId = request.args['userId']
 
-        user_follows = dbhelpers.run_select_statement(
+        all_user_follows = dbhelpers.run_select_statement(
             "SELECT f.followed_id, u.email, u.username, u.bio, u.birthdate, u.imageUrl, u.bannerUrl FROM `user` u INNER JOIN follow f ON u.id = f.followed_id WHERE f.user_id= ?", [userId])
 
         if(user_follows == None):
