@@ -22,16 +22,16 @@ class Comments:
             content = all_comments[0][4]
             createdAt = all_comments[0][5]
 
-        comment = {
-            "commentId": commentId,
-            "tweetId": tweetId,
-            "userId": userId,
-            "username": username,
-            "content": content,
-            "createdAt": createdAt
-        }
+            comment = {
+                "commentId": commentId,
+                "tweetId": tweetId,
+                "userId": userId,
+                "username": username,
+                "content": content,
+                "createdAt": createdAt
+            }
 
-        empty_comment.append(comment)
+            empty_comment.append(comment)
 
         if(all_comments == None):
             return Response("Failed to GET all comments", mimetype="text/plain", status=500)
