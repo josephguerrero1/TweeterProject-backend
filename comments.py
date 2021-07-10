@@ -9,15 +9,35 @@ class Comments:
     # Get Comments
 
     def get_comments():
-        tweetId = int(request.args['tweetId'])
-        comments = dbhelpers.run_select_statement(
-            "SELECT c.id, c.tweet_id, c.user_id, u.username, c.content, c.createdAt FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.tweet_id = ?", [tweetId])
+        tweetId = request.json['tweetId']
+        all_comments = dbhelpers.run_select_statement(
+            "SELECT c.id, c.user_id, u.username, c.content, c.createdAt FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.tweet_id = ?", [tweetId])
 
-        if(comments == None):
-            return Response("Failed to GET comments", mimetype="text/plain", status=500)
+        empty_comment = []
+
+        for comment in all_comments:
+            commentId = all_comments[0][1]
+            userId = all_comments[0][2]
+            username = all_comments[0][3]
+            content = all_comments[0][4]
+            createdAt = all_comments[0][5]
+
+        comment = {
+            "commentId": commentId,
+            "tweetId": tweetId,
+            "userId": userId,
+            "username": username,
+            "content": content,
+            "createdAt": createdAt
+        }
+
+        empty_comment.append(comment)
+
+        if(all_comments == None):
+            return Response("Failed to GET all comments", mimetype="text/plain", status=500)
         else:
-            comments_json = json.dumps(comments, default=str)
-            return Response(comments_json, mimetype="application/json", status=200)
+            all_comments_json = json.dumps(empty_comment, default=str)
+            return Response(all_comments_json, mimetype="application/json", status=200)
 
     # Post Comment
 
@@ -32,7 +52,7 @@ class Comments:
         )
 
         if(user_id == None):
-            return Response("Invalid Login Token", mimetype="text/plain", status=500)
+            return Response("Invalid Login Token", mimetype="text/plain", status=400)
         else:
             userId = user_id[0][0]
 
@@ -42,10 +62,10 @@ class Comments:
         )
 
         if(comment_id == None):
-            return Response("Tweet ID is invalid", mimetype="text/plain", status=500)
+            return Response("Failed to post comment", mimetype="text/plain", status=500)
         else:
             comment_info = dbhelpers.run_select_statement(
-                "SELECT c.id, c.tweet_id, c.user_id, u.username, c.content, c.createdAt FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.id = ?", [
+                "SELECT u.username, c.createdAt FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.id = ?", [
                     comment_id]
             )
 
@@ -71,18 +91,67 @@ class Comments:
         commentId = request.json['commentId']
         content = request.json['content']
 
-        # Write if statement
-        comment = dbhelpers.run_select_statement(
-            "SELECT us.loginToken, c.id, c.content FROM user_session us INNER JOIN comment c ON us.user_id = c.user_id WHERE us.loginToken = ? AND c.id = ?", [
-                loginToken, commentId]
+        user_id = dbhelpers.run_select_statement(
+            "SELECT us.user_id FROM user_session us WHERE us.loginToken = ?", [
+                loginToken]
         )
 
+        if(user_id == None):
+            return Response("Invalid Login Token", mimetype="text/plain", status=400)
+        else:
+            userId = user_id[0][0]
+
         rowcount = dbhelpers.run_update_statement(
-            "UPDATE comment SET content = ? WHERE id = ?", [content, commentId]
+            "UPDATE comment c SET c.content = ? WHERE c.id = ? AND c.user_id = ?", [
+                content, commentId, userId]
         )
+
+        if(rowcount == None):
+            return Response("Failed to update comment", mimetype="text/plain", status=500)
+        elif(rowcount == 1):
+            updated_comment = dbhelpers.run_select_statement(
+                "SELECT c.tweet_id, u.username, c.createdAt FROM `user` u INNER JOIN comment c ON u.id = c.user_id WHERE c.id = ?", [
+                    commentId]
+            )
+
+            tweetId = updated_comment[0][0]
+            username = updated_comment[0][1]
+            createdAt = updated_comment[0][2]
+
+            updated_Comment = {
+                "commentId": commentId,
+                "tweetId": tweetId,
+                "userId": user_id,
+                "username": username,
+                "content": content,
+                "createdAt": createdAt
+            }
+
+            updated_Comment_json = json.dumps(updated_Comment, default=str)
+            return Response(updated_Comment_json, mimetype="application/json", status=200)
 
     # Delete Comments
 
     def delete_comment():
         loginToken = request.json['loginToken']
         commentId = request.json['commentId']
+
+        user_id = dbhelpers.run_select_statement(
+            "SELECT us.user_id FROM user_session us WHERE us.loginToken = ?", [
+                loginToken]
+        )
+
+        if(user_id == None):
+            return Response("Invalid Login Token", mimetype="text/plain", status=500)
+        else:
+            userId = user_id[0][0]
+
+        rowcount = dbhelpers.run_delete_statement(
+            "DELETE FROM comment c WHERE c.id = ? AND c.user_id = ?", [
+                commentId, userId]
+        )
+
+        if(rowcount == 1):
+            return Response(status=204)
+        elif(rowcount == None):
+            return Response("Failed to delete comment", mimetype="text/plain", status=500)

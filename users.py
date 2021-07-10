@@ -45,10 +45,10 @@ class Users:
                 imageUrl = user[5]
                 bannerUrl = user[6]
 
-                user_dictionary = {"userId": userId, "email": email, "username": username, "bio": bio, "birthdate": birthdate, "imageUrl": imageUrl, "bannerUrl": bannerUrl
-                                   }
+                user = {"userId": userId, "email": email, "username": username, "bio": bio, "birthdate": birthdate, "imageUrl": imageUrl, "bannerUrl": bannerUrl
+                        }
 
-                empty_user.append(user_dictionary)
+                empty_user.append(user)
 
             if(all_users == None):
                 return Response("Failed to GET all users", mimetype="text/plain", status=500)

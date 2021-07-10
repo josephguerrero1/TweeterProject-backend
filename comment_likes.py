@@ -9,7 +9,7 @@ class Comment_likes:
     # Get Comment Likes
 
     def get_comment_likes():
-        commentId = request.args.get('commentId')
+        commentId = request.json.get('commentId')
 
         if commentId:
             comment_likes_info = dbhelpers.run_select_statement(
