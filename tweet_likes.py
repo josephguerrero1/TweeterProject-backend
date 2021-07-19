@@ -35,9 +35,9 @@ class Tweet_likes:
             empty_tweet_like = []
 
             for tweet_like in all_tweet_likes:
-                tweetId = all_tweet_likes[0][0]
-                userId = all_tweet_likes[0][1]
-                username = all_tweet_likes[0][2]
+                tweetId = all_tweet_likes[0]
+                userId = all_tweet_likes[1]
+                username = all_tweet_likes[2]
 
                 tweet_like = {
                     "tweetId": tweetId,

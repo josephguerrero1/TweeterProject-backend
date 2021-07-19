@@ -35,9 +35,9 @@ class Comment_likes:
             empty_comment_like = []
 
             for comment_like in all_comment_likes:
-                commentId = all_comment_likes[0][0]
-                userId = all_comment_likes[0][1]
-                username = all_comment_likes[0][2]
+                commentId = all_comment_likes[0]
+                userId = all_comment_likes[1]
+                username = all_comment_likes[2]
 
                 comment_like = {
                     "commentId": commentId,
@@ -70,29 +70,29 @@ class Comment_likes:
         else:
             userId = user_id[0][0]
 
-        comment_like_id = dbhelpers.run_insert_statement(
-            "INSERT INTO comment_like (comment_id, user_id) VALUES (?, ?)", [
-                commentId, userId]
-        )
-
-        if(comment_like_id == None):
-            return Response("Failed to like comment", mimetype="text/plain", status=500)
-        else:
-            comment_like_info = dbhelpers.run_select_statement(
-                "SELECT cl.comment_id, cl.user_id, u.username FROM `user` u INNER JOIN comment_like cl ON u.id = cl.user_id WHERE cl.id = ?", [
-                    comment_like_id]
+            comment_like_id = dbhelpers.run_insert_statement(
+                "INSERT INTO comment_like (comment_id, user_id) VALUES (?, ?)", [
+                    commentId, userId]
             )
 
-            username = comment_like_info[0][2]
+            if(comment_like_id == None):
+                return Response("Failed to like comment", mimetype="text/plain", status=500)
+            else:
+                comment_like_info = dbhelpers.run_select_statement(
+                    "SELECT cl.comment_id, cl.user_id, u.username FROM `user` u INNER JOIN comment_like cl ON u.id = cl.user_id WHERE cl.id = ?", [
+                        comment_like_id]
+                )
 
-            comment_like = {
-                "commentId": commentId,
-                "userId": userId,
-                "username": username
-            }
+                username = comment_like_info[0][2]
 
-            comment_like_json = json.dumps(comment_like, default=str)
-            return Response(comment_like_json, mimetype="application/json", status=201)
+                comment_like = {
+                    "commentId": commentId,
+                    "userId": userId,
+                    "username": username
+                }
+
+                comment_like_json = json.dumps(comment_like, default=str)
+                return Response(comment_like_json, mimetype="application/json", status=201)
 
     # Unlike Comment
 

@@ -16,11 +16,11 @@ class Comments:
         empty_comment = []
 
         for comment in all_comments:
-            commentId = all_comments[0][1]
-            userId = all_comments[0][2]
-            username = all_comments[0][3]
-            content = all_comments[0][4]
-            createdAt = all_comments[0][5]
+            commentId = all_comments[1]
+            userId = all_comments[2]
+            username = all_comments[3]
+            content = all_comments[4]
+            createdAt = all_comments[5]
 
             comment = {
                 "commentId": commentId,

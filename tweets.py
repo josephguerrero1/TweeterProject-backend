@@ -45,13 +45,13 @@ class Tweets:
             empty_tweet = []
 
             for tweet in all_tweets_info:
-                tweetId = all_tweets_info[0][0]
-                userId = all_tweets_info[0][1]
-                username = all_tweets_info[0][2]
-                content = all_tweets_info[0][3]
-                createdAt = all_tweets_info[0][4]
-                userImageUrl = all_tweets_info[0][5]
-                tweetImageUrl = all_tweets_info[0][6]
+                tweetId = all_tweets_info[0]
+                userId = all_tweets_info[1]
+                username = all_tweets_info[2]
+                content = all_tweets_info[3]
+                createdAt = all_tweets_info[4]
+                userImageUrl = all_tweets_info[5]
+                tweetImageUrl = all_tweets_info[6]
 
                 tweet = {
                     "tweetId": tweetId,

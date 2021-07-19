@@ -14,14 +14,14 @@ class Users:
 
         if userId:
             user_info = dbhelpers.run_select_statement(
-                "SELECT id, email, username, bio, birthdate, imageUrl, bannerUrl FROM user WHERE id = ?", [userId])
+                "SELECT email, username, bio, birthdate, imageUrl, bannerUrl FROM user WHERE id = ?", [userId])
 
-            email = user_info[0][1]
-            username = user_info[0][2]
-            bio = user_info[0][3]
-            birthdate = user_info[0][4]
-            imageUrl = user_info[0][5]
-            bannerUrl = user_info[0][6]
+            email = user_info[0][0]
+            username = user_info[0][1]
+            bio = user_info[0][2]
+            birthdate = user_info[0][3]
+            imageUrl = user_info[0][4]
+            bannerUrl = user_info[0][5]
 
             user = [{"userId": userId, "email": email, "username": username, "bio": bio, "birthdate": birthdate, "imageUrl": imageUrl, "bannerUrl": bannerUrl
                      }]
@@ -71,8 +71,11 @@ class Users:
         userId = dbhelpers.run_insert_statement("INSERT INTO user(email, username, password, bio, birthdate, imageUrl, bannerUrl) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                                 [email, username, password, bio, birthdate, imageUrl, bannerUrl])
         if(userId == None):
-            return Response("DB Error, Sorry!", mimetype="text/plain", status=500)
+            return Response("Failed to post a new user", mimetype="text/plain", status=500)
         else:
+
+            user_session_id = dbhelpers.run_insert_statement("INSERT INTO user_session us (user_id, loginToken) VALUES (?, ?)",
+                                                             [userId, loginToken])
 
             newUser = {"userId": userId, "email": email, "username": username, "bio": bio,
                        "birthdate": birthdate, "imageUrl": imageUrl, "bannerUrl": bannerUrl, "loginToken": loginToken}

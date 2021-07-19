@@ -53,37 +53,37 @@ class Data:
 
 @app.get("/api/users")
 def get_users():
-    Data.get_users
+    return Data.get_users
 
 
 @app.get("/api/follows")
 def get_user_follows():
-    Data.get_user_follows
+    return Data.get_user_follows
 
 
 @app.get("/api/followers")
 def get_user_followers():
-    Data.get_user_followers
+    return Data.get_user_followers
 
 
 @app.get("/api/tweets")
 def get_tweets():
-    Data.get_tweets
+    return Data.get_tweets
 
 
 @app.get("/api/tweet-likes")
 def get_tweet_likes():
-    Data.get_tweet_likes
+    return Data.get_tweet_likes
 
 
 @app.get("/api/comments")
 def get_comments():
-    Data.get_comments
+    return Data.get_comments
 
 
 @app.get("/api/comment-likes")
 def get_comment_likes():
-    Data.get_comment_likes
+    return Data.get_comment_likes
 
 
 # POST endpoints
@@ -91,37 +91,37 @@ def get_comment_likes():
 
 @app.post("/api/users")
 def post_user():
-    Data.post_user
+    return Data.post_user
 
 
 @app.post("/api/login")
 def user_login():
-    Data.user_login
+    return Data.user_login
 
 
 @app.post("/api/follows")
 def follow_user():
-    Data.follow_user
+    return Data.follow_user
 
 
 @app.post("/api/tweets")
 def post_tweets():
-    Data.post_tweets
+    return Data.post_tweets
 
 
 @app.post("/api/tweet-likes")
 def like_tweet():
-    Data.like_tweet
+    return Data.like_tweet
 
 
 @app.post("/api/comments")
 def post_comment():
-    Data.post_comment
+    return Data.post_comment
 
 
 @app.post("/api/comment-likes")
 def like_comment():
-    Data.like_comment
+    return Data.like_comment
 
 
 # PATCH endpoints
@@ -129,17 +129,17 @@ def like_comment():
 
 @app.patch("/api/users")
 def update_user():
-    Data.update_user
+    return Data.update_user
 
 
 @app.patch("/api/tweets")
 def update_tweet():
-    Data.update_tweet
+    return Data.update_tweet
 
 
 @app.patch("/api/comments")
 def update_comment():
-    Data.update_comment
+    return Data.update_comment
 
 
 # DELETE endpoints
@@ -147,37 +147,37 @@ def update_comment():
 
 @app.delete("/api/users")
 def delete_user():
-    Data.delete_user
+    return Data.delete_user
 
 
 @app.delete("/api/login")
 def user_logout():
-    Data.user_logout
+    return Data.user_logout
 
 
 @app.delete("/api/follows")
 def unfollow_user():
-    Data.unfollow_user
+    return Data.unfollow_user
 
 
 @app.delete("/api/tweets")
 def delete_tweet():
-    Data.delete_tweet
+    return Data.delete_tweet
 
 
 @app.delete("/api/tweet-likes")
 def unlike_tweet():
-    Data.unlike_tweet
+    return Data.unlike_tweet
 
 
 @app.delete("/api/comments")
 def delete_comment():
-    Data.delete_comment
+    return Data.delete_comment
 
 
 @app.delete("/api/comment-likes")
 def unlike_comment():
-    Data.unlike_comment
+    return Data.unlike_comment
 
 
 # Production Code
