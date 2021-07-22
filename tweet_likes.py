@@ -70,15 +70,15 @@ class Tweet_likes:
         else:
             userId = user_id[0][0]
 
-        tweet_like_id = dbhelpers.run_insert_statement(
-            "INSERT INTO tweet_like (tweet_id, user_id) VALUES (?, ?)", [
-                tweetId, userId]
-        )
+            tweet_like_id = dbhelpers.run_insert_statement(
+                "INSERT INTO tweet_like (tweet_id, user_id) VALUES (?, ?)", [
+                    tweetId, userId]
+            )
 
-        if(tweet_like_id == None):
-            return Response("Failed to like tweet", mimetype="text/plain", status=500)
-        else:
-            return Response(status=201)
+            if(tweet_like_id == None):
+                return Response("Failed to like tweet", mimetype="text/plain", status=500)
+            else:
+                return Response(status=201)
 
     # Unlike Tweet
 
@@ -96,12 +96,12 @@ class Tweet_likes:
         else:
             userId = user_id[0][0]
 
-        rowcount = dbhelpers.run_delete_statement(
-            "DELETE FROM tweet_like tl WHERE tl.tweet_id = ? AND tl.user_id = ?", [
-                tweetId, userId]
-        )
+            rowcount = dbhelpers.run_delete_statement(
+                "DELETE FROM tweet_like tl WHERE tl.tweet_id = ? AND tl.user_id = ?", [
+                    tweetId, userId]
+            )
 
-        if(rowcount == None):
-            return Response("Failed to unlike tweet", mimetype="text/plain", status=500)
-        elif(rowcount == 1):
-            return Response(status=204)
+            if(rowcount == None):
+                return Response("Failed to unlike tweet", mimetype="text/plain", status=500)
+            elif(rowcount == 1):
+                return Response(status=204)

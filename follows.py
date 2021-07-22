@@ -52,15 +52,15 @@ class Follows:
         else:
             userId = user_id[0][0]
 
-        follow_id = dbhelpers.run_insert_statement(
-            "INSERT INTO follow (user_id, followed_id) VALUES (?, ?)", [
-                userId, followId]
-        )
+            follow_id = dbhelpers.run_insert_statement(
+                "INSERT INTO follow (user_id, followed_id) VALUES (?, ?)", [
+                    userId, followId]
+            )
 
-        if(follow_id == None):
-            return Response("Failed to follow user", mimetype="text/plain", status=500)
-        else:
-            return Response(status=204)
+            if(follow_id == None):
+                return Response("Failed to follow user", mimetype="text/plain", status=500)
+            else:
+                return Response(status=204)
 
     # Unfollow User
 

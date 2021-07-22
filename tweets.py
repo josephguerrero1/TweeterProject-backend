@@ -96,29 +96,29 @@ class Tweets:
         else:
             userId = user_id[0][0]
 
-        # Inserting into tweet table
+            # Inserting into tweet table
 
-        tweetId = dbhelpers.run_insert_statement(
-            "INSERT INTO tweet (content, imageUrl) VALUES (?, ?)"), [content, imageUrl]
+            tweetId = dbhelpers.run_insert_statement(
+                "INSERT INTO tweet (content, imageUrl) VALUES (?, ?)"), [content, imageUrl]
 
-        if(tweetId == None):
-            return Response("Failed to post tweet", mimetype="text/plain", status=500)
-        else:
+            if(tweetId == None):
+                return Response("Failed to post tweet", mimetype="text/plain", status=500)
+            else:
 
-            tweet_info = dbhelpers.run_select_statement(
-                "SELECT u.username, u.imageUrl, t.createdAt FROM `user` u INNER JOIN tweet t ON u.id = t.user_id WHERE tweet_id = ?", [
-                    tweetId]
-            )
+                tweet_info = dbhelpers.run_select_statement(
+                    "SELECT u.username, u.imageUrl, t.createdAt FROM `user` u INNER JOIN tweet t ON u.id = t.user_id WHERE tweet_id = ?", [
+                        tweetId]
+                )
 
-            username = tweet_info[0][0]
-            userImageUrl = tweet_info[0][1]
-            createdAt = tweet_info[0][2]
+                username = tweet_info[0][0]
+                userImageUrl = tweet_info[0][1]
+                createdAt = tweet_info[0][2]
 
-            tweet = {"tweetId": tweetId, "userId": userId, "username": username, "userImageUrl": userImageUrl, "content": content, "createdAt": createdAt, "imageUrl": imageUrl
-                     }
+                tweet = {"tweetId": tweetId, "userId": userId, "username": username, "userImageUrl": userImageUrl, "content": content, "createdAt": createdAt, "imageUrl": imageUrl
+                        }
 
-            tweet_json = json.dumps(tweet, default=str)
-            return Response(tweet_json, mimetype="application/json", status=201)
+                tweet_json = json.dumps(tweet, default=str)
+                return Response(tweet_json, mimetype="application/json", status=201)
 
     # Update Tweet
 
@@ -137,28 +137,28 @@ class Tweets:
         else:
             userId = user_id[0][0]
 
-        rowcount = dbhelpers.run_update_statement(
-            "UPDATE tweet t SET t.content = ? WHERE t.id = ? AND t.user_id = ?", [
-                content, tweetId, userId]
-        )
-
-        if(rowcount == 1):
-            updated_Tweet = dbhelpers.run_select_statement(
-                "SELECT t.id, t.content FROM tweet t WHERE t.id = ? AND t.user_id = ?", [
-                    tweetId, userId]
+            rowcount = dbhelpers.run_update_statement(
+                "UPDATE tweet t SET t.content = ? WHERE t.id = ? AND t.user_id = ?", [
+                    content, tweetId, userId]
             )
 
-            tweetId = updated_Tweet[0][0]
-            content = updated_Tweet[0][1]
+            if(rowcount == 1):
+                updated_Tweet = dbhelpers.run_select_statement(
+                    "SELECT t.id, t.content FROM tweet t WHERE t.id = ? AND t.user_id = ?", [
+                        tweetId, userId]
+                )
 
-            updated_tweet = {
-                "tweetId": tweetId,
-                "content": content
-            }
-            updated_tweet_json = json.dumps(updated_tweet, default=str)
-            return Response(updated_tweet_json, mimetype="application/json", status=200)
-        elif(rowcount == None):
-            return Response("Failed to update tweet", mimetype="text/plain", status=500)
+                tweetId = updated_Tweet[0][0]
+                content = updated_Tweet[0][1]
+
+                updated_tweet = {
+                    "tweetId": tweetId,
+                    "content": content
+                }
+                updated_tweet_json = json.dumps(updated_tweet, default=str)
+                return Response(updated_tweet_json, mimetype="application/json", status=200)
+            elif(rowcount == None):
+                return Response("Failed to update tweet", mimetype="text/plain", status=500)
 
     # Delete Tweet
 
@@ -176,12 +176,12 @@ class Tweets:
         else:
             userId = user_id[0][0]
 
-        rowcount = dbhelpers.run_delete_statement(
-            "DELETE FROM tweet t WHERE t.id = ? AND t.user_id = ?", [
-                tweetId, userId]
-        )
+            rowcount = dbhelpers.run_delete_statement(
+                "DELETE FROM tweet t WHERE t.id = ? AND t.user_id = ?", [
+                    tweetId, userId]
+            )
 
-        if(rowcount == 1):
-            return Response(status=204)
-        elif(rowcount == None):
-            return Response("Failed to delete tweet", mimetype="text/plain", status=500)
+            if(rowcount == 1):
+                return Response(status=204)
+            elif(rowcount == None):
+                return Response("Failed to delete tweet", mimetype="text/plain", status=500)

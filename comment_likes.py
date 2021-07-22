@@ -110,12 +110,12 @@ class Comment_likes:
         else:
             userId = user_id[0][0]
 
-        rowcount = dbhelpers.run_delete_statement(
-            "DELETE FROM comment_like cl WHERE cl.comment_id = ? AND cl.user_id = ?", [
-                commentId, userId]
-        )
+            rowcount = dbhelpers.run_delete_statement(
+                "DELETE FROM comment_like cl WHERE cl.comment_id = ? AND cl.user_id = ?", [
+                    commentId, userId]
+            )
 
-        if(rowcount == None):
-            return Response("Failed to unlike comment", mimetype="text/plain", status=500)
-        elif(rowcount == 1):
-            return Response(status=204)
+            if(rowcount == None):
+                return Response("Failed to unlike comment", mimetype="text/plain", status=500)
+            elif(rowcount == 1):
+                return Response(status=204)
